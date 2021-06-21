@@ -1,7 +1,7 @@
 version: '3.3'
 
 services:
-  hello-world:
+  react-app:
     container_name: react-app
     build:
       context: .
@@ -10,5 +10,5 @@ services:
       - '.:/app'
       - '/app/node_modules'
     ports:
-      - 3000:3000
+    - 3000:80
     stdin_open: true

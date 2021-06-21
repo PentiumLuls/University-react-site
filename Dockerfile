@@ -1,17 +1,17 @@
-FROM node:13.12.0-alpine
+FROM node:13.12.0-alpine as builder
 
-# set working directory
-WORKDIR /app
+# install and cache app dependencies
+COPY package.json package-lock.json ./
+RUN npm install && mkdir /react-frontend && mv ./node_modules ./react-frontend
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
+WORKDIR /react-frontend
+COPY . .
+RUN npm run build
 
-# install app dependencies
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm install
-
-# add app
-COPY . ./
-
-CMD ["npm", "start"]
+# Include nginx
+FROM nginx:1.16.0-alpine
+COPY --from=builder /react-frontend/build /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx-conf/wp.conf /etc/nginx/conf.d
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
